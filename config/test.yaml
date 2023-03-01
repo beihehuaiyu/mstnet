@@ -1,0 +1,74 @@
+epochs: 60000
+mode: "clas"
+val_ratio: 0.2
+
+train_type:
+  type : 'normal'
+  
+train:
+  batch_size : 4
+  datasets: 
+      type: Gla_dataset
+      dataset_root: /home/aistudio/Glaucoma_grading/training/multi-modality_images
+      label_file: /home/aistudio/Glaucoma_grading/training/glaucoma_grading_training_GT.xlsx
+      oct_image_size: 224
+      num_seg: 32
+      img_transforms: 
+        - type: RandomResizedCrop
+          size: 300
+          scale: [0.8, 1.2]
+        - type: RandomHorizontalFlip
+        - type: RandomVerticalFlip
+        - type: RandomRotation
+          degrees: 180
+      oct_transforms: 
+        - type: RandomHorizontalFlip
+        - type: RandomVerticalFlip
+        - type: RandomRotation
+          degrees: 180
+
+val:
+  batch_size : 1
+  datasets: 
+      type: Gla_dataset
+      dataset_root: /home/aistudio/Glaucoma_grading/training/multi-modality_images
+      label_file: /home/aistudio/Glaucoma_grading/training/glaucoma_grading_training_GT.xlsx
+      oct_image_size: 224
+      fundus_image_size: 300
+      num_seg: 32
+      
+test:
+  datasets: 
+      type: Gla_dataset
+      dataset_root: /home/aistudio/Glaucoma_grading/testing/multi-modality_images
+      oct_image_size: 224
+      fundus_image_size: 300
+      num_seg: 32
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-6
+  use_nesterov: True
+
+lr_scheduler:
+  type: WarmupCosine
+  learning_rate: 1.0e-5
+  warmup_steps: 300
+
+metric:
+  types: 
+    - type: KappaMetric
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+model:
+  type: Swin_video
+  pretrained: /home/aistudio/model_zoo/model.pdparams
+  num_classes: 3
+
+infer_plugin:
+  - type: CSVWritePlugin
